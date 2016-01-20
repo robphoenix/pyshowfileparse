@@ -4,7 +4,7 @@ from pprint import pprint
 from collections import namedtuple
 
 
-FOLDER = "~/CLERK/files/example_show_files_dir"
+FOLDER = "/home/willem/CLERK/files/example_show_files_dir"
 HOSTNAME_REGEX = re.compile(r"(?P<hostname>\S+)\#sh[ow\s]+ver.*")
 SERIAL_NUMBER_REGEX = re.compile(r"""
                                  [Ss]ystem\s+[Ss]erial\s+[Nn]umber
@@ -21,11 +21,16 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(r"""
 
 
 def _find_hostname(fin):
+    """
+    Finds device hostname in a given Cisco 'show' file.
+    Uses a regular expression.
+    """
     i, hostname = 0, ""
-    for line in fin:
-        if HOSTNAME_REGEX.search(line):
-            while i < 1:
+    while i < 1:
+        for line in fin:
+            if HOSTNAME_REGEX.search(line):
                 hostname = re.match(HOSTNAME_REGEX, line).group("hostname")
+                # finish parsing the file once hostname has been found
                 i += 1
     return hostname
 
@@ -50,9 +55,10 @@ def collate(directory):
                         'hostname serial_number model_number software_version software_image')
     for fin in os.listdir(FOLDER):
         i = 0
-        hostname = _find_hostname(open(os.path.join(FOLDER, fin)))
-        serial_numbers = _find_serial_nums(open(os.path.join(FOLDER, fin)))
-        model_sw_result = _find_model_sw(open(os.path.join(FOLDER, fin)))
+        show_file = open(os.path.join(FOLDER, fin)).read()
+        hostname = _find_hostname(show_file)
+        serial_numbers = _find_serial_nums(show_file)
+        model_sw_result = _find_model_sw(show_file)
         while i < len(serial_numbers):
             device_list.append(Device(hostname,
                                       serial_numbers[i],
