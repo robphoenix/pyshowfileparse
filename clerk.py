@@ -1,23 +1,34 @@
 import os
 import re
-from pprint import pprint
+import csv
+from sys import argv
 from collections import namedtuple
+from time import gmtime, strftime
 
-
-FOLDER = "/home/willem/CLERK/files/example_show_files_dir"
-HOSTNAME_REGEX = re.compile(r"(?P<hostname>\S+)\#sh[ow\s]+ver.*")
-SERIAL_NUMBER_REGEX = re.compile(r"""
-                                 [Ss]ystem\s+[Ss]erial\s+[Nn]umber
-                                 \s+:\s
-                                 (?P<sys_ser_num>[A-Z0-9]+)""",
-                                 re.VERBOSE)
-MODEL_AND_SOFTWARE_REGEX = re.compile(r"""
-                                      (?P<model_num>[A-Z0-9-]+)
-                                      \s+
-                                      (?P<sw_ver>\d+.\d\(\d\)[A-Z\d]+)
-                                      \s+
-                                      (?P<sw_image>[a-zA-Z\d-]+)""",
-                                      re.VERBOSE)
+script, DIRECTORY = argv
+HOSTNAME_REGEX = re.compile(
+        r"""
+        (?P<hostname>\S+) # capture hostname group
+        \#                # Priviliged mode CLI prompt
+        sh[ow\s]+ver.*    # show version pattern
+        """,
+        re.VERBOSE)
+SERIAL_NUMBER_REGEX = re.compile(
+        r"""
+        [Ss]ystem\s+[Ss]erial\s+[Nn]umber # system serial number pattern
+        \s+:\s                            # separator
+        (?P<sys_ser_num>[A-Z0-9]+)        # capture serial number group
+        """,
+        re.VERBOSE)
+MODEL_AND_SOFTWARE_REGEX = re.compile(
+        r"""
+        (?P<model_num>[A-Z0-9-]+)        # capture model number group
+        \s+                              # separator
+        (?P<sw_ver>\d{2}\.[A-Z\d\.)?(?]+) # capture software version group
+        \s+                              # separator
+        (?P<sw_image>[a-zA-Z0-9]+[-|_][a-zA-Z\d-]+\-[a-zA-Z0-9]+) # capture software image group
+        """,
+        re.VERBOSE)
 
 
 def _find_hostname(fin):
@@ -64,13 +75,14 @@ def collate(directory):
     serial number, model number, software version and software image for
     each Cisco 'show' file in a given directory.
     """
-    i, device_list = 0, []
+    device_list = []
     Device = namedtuple('Device',
                         'hostname serial_number model_number software_version software_image')
-    for fin in os.listdir(FOLDER):
-        hostname = _find_hostname(open(os.path.join(FOLDER, fin)))
-        serial_numbers = _find_serial_nums(open(os.path.join(FOLDER, fin)))
-        model_sw_result = _find_model_sw(open(os.path.join(FOLDER, fin)))
+    for fin in sorted(os.listdir(directory)):
+        hostname = _find_hostname(open(os.path.join(directory, fin)))
+        serial_numbers = _find_serial_nums(open(os.path.join(directory, fin)))
+        model_sw_result = _find_model_sw(open(os.path.join(directory, fin)))
+        i = 0
         while i < len(serial_numbers):
             device_list.append(Device(hostname,
                                       serial_numbers[i],
@@ -81,4 +93,30 @@ def collate(directory):
     return device_list
 
 
-pprint(collate(FOLDER))
+def csv_inventory_record(collated_records):
+    """
+    Creates a .csv file containing Cisco device information from
+    a given list of named tuples.
+    """
+    csv_filename = "INVENTORY-{}.csv".format(strftime("%Y-%m-%d-%H%M%S", gmtime()))
+    with open(csv_filename, 'w') as csvfile:
+        fieldnames = ['Hostname',
+                      'Serial Number',
+                      'Model Number',
+                      'Software Image',
+                      'Software Version']
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(fieldnames)
+        for entry in collated_records:
+            writer.writerow([entry.hostname,
+                            entry.serial_number,
+                            entry.model_number,
+                            entry.software_image,
+                            entry.software_version])
+
+
+
+
+csv_inventory_record(collate(DIRECTORY))
+
+
