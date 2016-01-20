@@ -36,6 +36,11 @@ def _find_hostname(fin):
 
 
 def _find_serial_nums(fin):
+    """
+    Finds device serial number(s) in a given Cisco 'show' file.
+    Uses a regular expression.
+    """
+    # as there may be more than one serial number, store them in a list
     sn_list = []
     for line in fin:
         if SERIAL_NUMBER_REGEX.search(line):
@@ -46,19 +51,26 @@ def _find_serial_nums(fin):
 
 
 def _find_model_sw(fin):
+    """
+    Finds model number and software information in a given Cisco 'show' file.
+    Uses a regular expression.
+    """
     return re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
 
 
 def collate(directory):
-    device_list = []
+    """
+    Creates a list of named tuples. Each named tuple contains the hostname,
+    serial number, model number, software version and software image for
+    each Cisco 'show' file in a given directory.
+    """
+    i, device_list = 0, []
     Device = namedtuple('Device',
                         'hostname serial_number model_number software_version software_image')
     for fin in os.listdir(FOLDER):
-        i = 0
-        show_file = open(os.path.join(FOLDER, fin)).read()
-        hostname = _find_hostname(show_file)
-        serial_numbers = _find_serial_nums(show_file)
-        model_sw_result = _find_model_sw(show_file)
+        hostname = _find_hostname(open(os.path.join(FOLDER, fin)))
+        serial_numbers = _find_serial_nums(open(os.path.join(FOLDER, fin)))
+        model_sw_result = _find_model_sw(open(os.path.join(FOLDER, fin)))
         while i < len(serial_numbers):
             device_list.append(Device(hostname,
                                       serial_numbers[i],
@@ -70,4 +82,3 @@ def collate(directory):
 
 
 pprint(collate(FOLDER))
-
