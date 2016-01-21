@@ -18,16 +18,16 @@ SERIAL_NUMBER_REGEX = re.compile(
         r"""
         [Ss]ystem\s+[Ss]erial\s+[Nn]umber # system serial number pattern
         \s+:\s                            # separator
-        (?P<sys_ser_num>[A-Z0-9]+)        # capture serial number group
+        (?P<sys_ser_num>[\w]+)            # capture serial number group
         """,
         re.VERBOSE)
 MODEL_AND_SOFTWARE_REGEX = re.compile(
         r"""
-        (?P<model_num>[A-Z0-9-]+)        # capture model number group
-        \s+                              # separator
-        (?P<sw_ver>\d{2}\.[A-Z\d\.)?(?]+) # capture software version group
-        \s+                              # separator
-        (?P<sw_image>[a-zA-Z0-9]+[-|_][a-zA-Z\d-]+\-[a-zA-Z0-9]+) # capture software image group
+        (?P<model_num>[\w-]+)               # capture model number group
+        \s+                                 # separator
+        (?P<sw_ver>\d{2}\.[\w\.)?(?]+)      # capture software version group
+        \s+                                 # separator
+        (?P<sw_image>\w+[-|_][\w-]+\-[\w]+) # capture software image group
         """,
         re.VERBOSE)
 
