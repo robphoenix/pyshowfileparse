@@ -5,7 +5,8 @@ from sys import argv
 from collections import namedtuple
 from time import gmtime, strftime
 
-script, DIRECTORY = argv
+# script, DIRECTORY = argv
+DIRECTORY = "/home/willem/code/python/cisco_clerk/example_show_files_dir"
 HOSTNAME_REGEX = re.compile(
         r"""
         (?P<hostname>\S+) # capture hostname group
@@ -31,7 +32,7 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
         re.VERBOSE)
 
 
-def _find_hostname(fin):
+def find_hostname(fin):
     """
     Finds device hostname in a given Cisco 'show' file.
     Uses a regular expression.
@@ -46,7 +47,7 @@ def _find_hostname(fin):
     return hostname
 
 
-def _find_serial_nums(fin):
+def find_serial_nums(fin):
     """
     Finds device serial number(s) in a given Cisco 'show' file.
     Uses a regular expression.
@@ -61,7 +62,7 @@ def _find_serial_nums(fin):
     return sn_list
 
 
-def _find_model_sw(fin):
+def find_model_sw(fin):
     """
     Finds model number and software information in a given Cisco 'show' file.
     Uses a regular expression.
@@ -79,9 +80,9 @@ def collate(directory):
     Device = namedtuple('Device',
                         'hostname serial_number model_number software_version software_image')
     for fin in sorted(os.listdir(directory)):
-        hostname = _find_hostname(open(os.path.join(directory, fin)))
-        serial_numbers = _find_serial_nums(open(os.path.join(directory, fin)))
-        model_sw_result = _find_model_sw(open(os.path.join(directory, fin)))
+        hostname = find_hostname(open(os.path.join(directory, fin)))
+        serial_numbers = find_serial_nums(open(os.path.join(directory, fin)))
+        model_sw_result = find_model_sw(open(os.path.join(directory, fin)))
         i = 0
         while i < len(serial_numbers):
             device_list.append(Device(hostname,
@@ -118,5 +119,3 @@ def csv_inventory_record(collated_records):
 
 
 csv_inventory_record(collate(DIRECTORY))
-
-
