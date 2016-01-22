@@ -3,3 +3,4 @@
 *.csv
 /.cache/
 *pyc
+/__pycache__/

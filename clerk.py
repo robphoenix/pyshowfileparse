@@ -6,7 +6,7 @@ from collections import namedtuple
 from time import gmtime, strftime
 
 # script, DIRECTORY = argv
-DIRECTORY = "/home/willem/code/python/cisco_clerk/example_show_files_dir"
+DIRECTORY = "/home/willem/code/python/cisco_clerk/test_data"
 HOSTNAME_REGEX = re.compile(
         r"""
         (?P<hostname>\S+) # capture hostname group
@@ -34,8 +34,14 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
 
 def find_hostname(fin):
     """
+    find_hostname(file) -> str
+
     Finds device hostname in a given Cisco 'show' file.
     Uses a regular expression.
+
+
+    >>> find_hostname(open("file.txt"))
+    'hostname'
     """
     i, hostname = 0, ""
     while i < 1:
@@ -49,10 +55,15 @@ def find_hostname(fin):
 
 def find_serial_nums(fin):
     """
+    find_serial_nums(file) -> list(str)
+
     Finds device serial number(s) in a given Cisco 'show' file.
     Uses a regular expression.
+
+
+    >>> find_serial_nums(open("file.txt"))
+    ['ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333']
     """
-    # as there may be more than one serial number, store them in a list
     sn_list = []
     for line in fin:
         if SERIAL_NUMBER_REGEX.search(line):
@@ -61,20 +72,42 @@ def find_serial_nums(fin):
                 sn_list.append(sn_match)
     return sn_list
 
-
 def find_model_sw(fin):
     """
+    find_model_sw(file) -> list(tuple(str))
+
     Finds model number and software information in a given Cisco 'show' file.
     Uses a regular expression.
+
+
+    >>> find_model_sw(open("file.txt"))
+    [('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
+     ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
+     ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
     """
     return re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
 
 
 def collate(directory):
     """
+    collate(str) -> list(Device(str))
+
     Creates a list of named tuples. Each named tuple contains the hostname,
     serial number, model number, software version and software image for
     each Cisco 'show' file in a given directory.
+
+
+    >>> collate("directory")
+    [Device(hostname='elizabeth_cotton',
+            serial_number='ANC1111A1AB',
+            model_number='WS-C2960C-8PC-L',
+            software_version='15.0(2)SE5',
+            software_image='C2960c405-UNIVERSALK9-M'),
+    Device(hostname='howlin_wolf',
+           serial_number='ABC2222A2AB',
+           model_number='WS-C2960C-8PC-L',
+           software_version='15.0(2)SE5',
+           software_image='C2960c405-UNIVERSALK9-M')]
     """
     device_list = []
     Device = namedtuple('Device',
@@ -91,6 +124,7 @@ def collate(directory):
                                       model_sw_result[i][1],
                                       model_sw_result[i][2]))
             i += 1
+    print device_list
     return device_list
 
 
@@ -116,6 +150,4 @@ def csv_inventory(collated_records):
                             entry.software_version])
 
 
-
-
-csv_inventory(collate(DIRECTORY))
+# csv_inventory(collate(DIRECTORY))
