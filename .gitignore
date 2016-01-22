@@ -2,3 +2,4 @@
 /example_show_files_dir/
 *.csv
 /.cache/
+*pyc

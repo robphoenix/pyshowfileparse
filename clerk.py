@@ -94,7 +94,7 @@ def collate(directory):
     return device_list
 
 
-def csv_inventory_record(collated_records):
+def csv_inventory(collated_records):
     """
     Creates a .csv file containing Cisco device information from
     a given list of named tuples.
@@ -118,4 +118,4 @@ def csv_inventory_record(collated_records):
 
 
 
-csv_inventory_record(collate(DIRECTORY))
+csv_inventory(collate(DIRECTORY))
