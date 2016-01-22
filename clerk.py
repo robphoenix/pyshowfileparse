@@ -76,7 +76,7 @@ def find_model_sw(fin):
     """
     find_model_sw(file) -> list(tuple(str))
 
-    Finds model number and software information in a given Cisco 'show' file.
+    Finds model number, software version and software image in a given Cisco 'show' file.
     Uses a regular expression.
 
 
@@ -85,7 +85,8 @@ def find_model_sw(fin):
      ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
      ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
     """
-    return re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
+    model_sw_list = re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
+    return model_sw_list
 
 
 def collate(directory):
@@ -103,15 +104,19 @@ def collate(directory):
             model_number='WS-C2960C-8PC-L',
             software_version='15.0(2)SE5',
             software_image='C2960c405-UNIVERSALK9-M'),
-    Device(hostname='howlin_wolf',
-           serial_number='ABC2222A2AB',
-           model_number='WS-C2960C-8PC-L',
-           software_version='15.0(2)SE5',
-           software_image='C2960c405-UNIVERSALK9-M')]
+     Device(hostname='howlin_wolf',
+            serial_number='ABC2222A2AB',
+            model_number='WS-C2960C-8PC-L',
+            software_version='15.0(2)SE5',
+            software_image='C2960c405-UNIVERSALK9-M')]
     """
     device_list = []
     Device = namedtuple('Device',
-                        'hostname serial_number model_number software_version software_image')
+                        '''hostname
+                           serial_number
+                           model_number
+                           software_version
+                           software_image''')
     for fin in sorted(os.listdir(directory)):
         hostname = find_hostname(open(os.path.join(directory, fin)))
         serial_numbers = find_serial_nums(open(os.path.join(directory, fin)))
@@ -124,7 +129,6 @@ def collate(directory):
                                       model_sw_result[i][1],
                                       model_sw_result[i][2]))
             i += 1
-    print device_list
     return device_list
 
 
@@ -133,7 +137,8 @@ def csv_inventory(collated_records):
     Creates a .csv file containing Cisco device information from
     a given list of named tuples.
     """
-    csv_filename = "INVENTORY-{}.csv".format(strftime("%Y-%m-%d-%H%M%S", gmtime()))
+    csv_filename = "INVENTORY-{}.csv".format(
+        strftime("%Y-%m-%d-%H%M%S", gmtime()))
     with open(csv_filename, 'w') as csvfile:
         fieldnames = ['Hostname',
                       'Serial Number',
@@ -151,3 +156,4 @@ def csv_inventory(collated_records):
 
 
 # csv_inventory(collate(DIRECTORY))
+collate(DIRECTORY)
