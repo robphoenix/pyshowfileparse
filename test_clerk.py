@@ -1,18 +1,29 @@
 import os
+import shutil
+import unittest
 
 import clerk
 
-TEST_DATA_DIR = os.path.join(os.getcwd(), "test_data/")
+
+class FindDataTest(unittest.TestCase):
+
+    def setUp(self):
+        self.test_data_dir = os.path.join(os.getcwd(), "test_data/")
+        shutil.rmtree(os.path.join(
+            self.test_data_dir, ".cache/"), ignore_errors=True)
+
+    def test_find_hostname(self):
+        expected = ['elizabeth_cotton',
+                    'howlin_wolf',
+                    'lightning_hopkins',
+                    'sister_rosetta_tharpe']
+        actual = []
+        for fin in sorted(os.listdir(self.test_data_dir)):
+            with open(os.path.join(self.test_data_dir, fin)) as t_fin:
+                actual.append(clerk.find_hostname(t_fin))
+        self.failUnlessEqual(actual, expected)
 
 
-def test_find_hostname():
-    expected = ['elizabeth_cotton',
-                'howlin_wolf',
-                'lightning_hopkins',
-                'sister_rosetta_tharpe']
-    actual = []
-    for fin in sorted(os.listdir(TEST_DATA_DIR)):
-        with open(os.path.join(TEST_DATA_DIR, fin)) as test_data_file:
-            actual.append(clerk.find_hostname(test_data_file))
-    assert actual == expected
+if __name__ == '__main__':
+    unittest.main()
 
