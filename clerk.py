@@ -1,3 +1,26 @@
+"""Cisco Clerk
+
+This module contains functions to extract device info from Cisco Switch `show` files.
+## TODO improve module description
+
+Example:
+    ## TODO improve example description
+    $ python clerk.py show_files_directory
+
+Attributes:
+    HOSTNAME_REGEX (str): Regex to extract the device hostname.
+                          Matches: HOSTNAME#sh version
+                          Assumes the `show version` command is used in
+                          the config. files, and the hostname is the name
+                          before the # symbol.
+    SERIAL_NUMBER_REGEX (str): Regex to extract the device serial number.
+                               Matches: System serial number            : ABC2016XYZ
+    MODEL_SW_PATTERN (str): Regex to extract device model number,
+                            software version and software image.
+                            Matches: WS-C2960C-8PC-L    15.0(2)SE5            C2960c405-UNIVERSALK9-M
+                            Matches: WS-C3650-24TD      03.03.03SE        cat3k_caa-universalk9 INSTALL
+"""
+
 import os
 import re
 import csv
@@ -34,14 +57,18 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
 
 def find_hostname(fin):
     """
-    find_hostname(file) -> str
-
     Finds device hostname in a given Cisco 'show' file.
-    Uses a regular expression.
+    Uses a regular expression. ## TODO improve find_hostname description
 
+    Args:
+        fin (file): Cisco show file ## TODO improve find_hostname args description
 
-    >>> find_hostname(open("file.txt"))
-    'hostname'
+    Returns:
+        str: Device hostname
+
+    Example:
+        >>> find_hostname(open("file.txt"))
+        'hostname'
     """
     i, hostname = 0, ""
     while i < 1:
@@ -55,14 +82,18 @@ def find_hostname(fin):
 
 def find_serial_nums(fin):
     """
-    find_serial_nums(file) -> list(str)
-
     Finds device serial number(s) in a given Cisco 'show' file.
-    Uses a regular expression.
+    Uses a regular expression. ## TODO improve find_serial_nums description
 
+    Args:
+        fin (file): Cisco show file ## TODO improve find_serial_nums args description
 
-    >>> find_serial_nums(open("file.txt"))
-    ['ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333']
+    Returns:
+        list(str): A list of device serial numbers
+
+    Example:
+        >>> find_serial_nums(open("file.txt"))
+        ['ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333']
     """
     sn_list = []
     for line in fin:
@@ -74,16 +105,23 @@ def find_serial_nums(fin):
 
 def find_model_sw(fin):
     """
-    find_model_sw(file) -> list(tuple(str))
+    Finds model number, software version and software image
+    in a given Cisco 'show' file.
 
-    Finds model number, software version and software image in a given Cisco 'show' file.
-    Uses a regular expression.
+    Uses a regular expression. ## TODO improve find_model_sw description
 
+    Args:
+        fin (file): Cisco show file. ## TODO improve find_model_sw args description
 
-    >>> find_model_sw(open("file.txt"))
-    [('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
-     ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
-     ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
+    Returns:
+        list(tuple(str)): list of 3 string tuples, containing device
+        model number, software version and software image
+
+    Example:
+        >>> find_model_sw(open("file.txt"))
+        [('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
+         ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
+         ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
     """
     model_sw_list = re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
     return model_sw_list
@@ -91,24 +129,29 @@ def find_model_sw(fin):
 
 def collate(directory):
     """
-    collate(str) -> list(Device(str))
+    Creates a list of named tuples. Each named tuple contains the
+    hostname, serial number, model number, software version and
+    software image for each Cisco 'show' file in a given directory.
 
-    Creates a list of named tuples. Each named tuple contains the hostname,
-    serial number, model number, software version and software image for
-    each Cisco 'show' file in a given directory.
+    Args:
+        directory (str): Directory containing the Cisco show files
 
+    Returns:
+        list(Device(str)): List of named tuples containing device
+                           info strings.
 
-    >>> collate("directory")
-    [Device(hostname='elizabeth_cotton',
-            serial_number='ANC1111A1AB',
-            model_number='WS-C2960C-8PC-L',
-            software_version='15.0(2)SE5',
-            software_image='C2960c405-UNIVERSALK9-M'),
-     Device(hostname='howlin_wolf',
-            serial_number='ABC2222A2AB',
-            model_number='WS-C2960C-8PC-L',
-            software_version='15.0(2)SE5',
-            software_image='C2960c405-UNIVERSALK9-M')]
+    Example:
+        >>> collate("directory")
+        [Device(hostname='elizabeth_cotton',
+                serial_number='ANC1111A1AB',
+                model_number='WS-C2960C-8PC-L',
+                software_version='15.0(2)SE5',
+                software_image='C2960c405-UNIVERSALK9-M'),
+         Device(hostname='howlin_wolf',
+                serial_number='ABC2222A2AB',
+                model_number='WS-C2960C-8PC-L',
+                software_version='15.0(2)SE5',
+                software_image='C2960c405-UNIVERSALK9-M')]
     """
     device_list = []
     Device = namedtuple('Device',
@@ -133,9 +176,15 @@ def collate(directory):
 
 
 def csv_inventory(collated_records):
-    """
+    """ TODO improve csv_inventory docstring
     Creates a .csv file containing Cisco device information from
     a given list of named tuples.
+
+    Args:
+        collated_records (list(Device(str))): List of named tuples.
+
+    Returns:
+        A .csv file.
     """
     csv_filename = "INVENTORY-{}.csv".format(
         strftime("%Y-%m-%d-%H%M%S", gmtime()))
