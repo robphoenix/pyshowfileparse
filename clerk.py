@@ -93,7 +93,7 @@ def main():
 	    csv_inventory(collate(args.directory))
             print 'Your inventory has been created successfully.'
         else:
-            print collate(args.directory)
+            stdout_inventory(collate(args.directory))
 
 
 def find_hostname(fin):
@@ -239,10 +239,53 @@ def csv_inventory(collated_records):
         writer.writerow(fieldnames)
         for entry in collated_records:
             writer.writerow([entry.hostname,
-                            entry.serial_number,
-                            entry.model_number,
-                            entry.software_image,
-                            entry.software_version])
+                             entry.serial_number,
+                             entry.model_number,
+                             entry.software_image,
+                             entry.software_version])
+
+
+def width_of_column(collated_records, column, init_length):
+    for entry in collated_records:
+        col_length = len(getattr(entry, column))
+        if col_length > init_length:
+            init_length = col_length
+    return init_length + 4
+
+
+def stdout_inventory(collated_records):
+    hn_col = width_of_column(collated_records, "hostname", 8)
+    sn_col = width_of_column(collated_records, "serial_number", 13)
+    mn_col = width_of_column(collated_records, "model_number", 12)
+    si_col = width_of_column(collated_records, "software_image", 14)
+    sv_col = width_of_column(collated_records, "software_version", 16)
+    table_structure = "\t|{0:^{hn_col}}|{1:^{sn_col}}|{2:^{mn_col}}|{3:^{si_col}}|{4:^{sv_col}}|"
+    table_divider = "\t={0:=^{hn_col}}+{1:=^{sn_col}}+{2:=^{mn_col}}+{3:=^{si_col}}+{4:=^{sv_col}}=".format(
+        "", "", "", "", "", hn_col=hn_col, sn_col=sn_col, mn_col=mn_col, si_col=si_col, sv_col=sv_col)
+    print "\n\n" + table_divider
+    print table_structure.format("Hostname",
+                                 "Serial Number",
+                                 "Model Number",
+                                 "Software Image",
+                                 "Software Version",
+                                 hn_col=hn_col,
+                                 sn_col=sn_col,
+                                 mn_col=mn_col,
+                                 si_col=si_col,
+                                 sv_col=sv_col)
+    print table_divider
+    for entry in collated_records:
+        print table_structure.format(entry.hostname,
+                                     entry.serial_number,
+                                     entry.model_number,
+                                     entry.software_image,
+                                     entry.software_version,
+                                     hn_col=hn_col,
+                                     sn_col=sn_col,
+                                     mn_col=mn_col,
+                                     si_col=si_col,
+                                     sv_col=sv_col)
+    print table_divider + "\n\n"
 
 
 if __name__ == '__main__':
