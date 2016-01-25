@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """Cisco Clerk
 
 This module contains functions to extract device info from Cisco Switch `show` files.
@@ -24,12 +27,13 @@ Attributes:
 import os
 import re
 import csv
+import json
+import argparse
 from sys import argv
 from collections import namedtuple
 from time import gmtime, strftime
 
-# script, DIRECTORY = argv
-DIRECTORY = "/home/willem/code/python/cisco_clerk/test_data"
+
 HOSTNAME_REGEX = re.compile(
         r"""
         (?P<hostname>\S+) # capture hostname group
@@ -53,6 +57,43 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
         (?P<sw_image>\w+[-|_][\w-]+\-[\w]+) # capture software image group
         """,
         re.VERBOSE)
+
+
+def main():
+	parser = argparse.ArgumentParser(
+	prog="Clerk",
+	description="""
+	Extract specific information from a directory of Cisco switch 'Show Files'.
+	Prints to stdout unless filetype specified.""",
+	formatter_class=argparse.RawDescriptionHelpFormatter,
+	epilog="""
+	Clerk
+	=====
+
+	Filing your Cisco inventory records
+	-----------------------------------
+	Generates an inventory of specific information regarding Cisco switches from a
+	folder of text files containing the output of Cisco Show commands.
+	This information can include, but is not limited to, device hostnames, model
+	numbers, serial numbers, software image & version and site id's & names. Also
+	takes into consideration switch stacks as well as individual switches.  This
+	can then all be collated into a separate text file, csv file or excel
+	spreadsheet, and updated as necessary if new files are added to the original
+	folder. Currently, due to the individual nature of device naming conventions
+	and engineer requirements, this project is not general purpose but built in a
+	bespoke manner.  The more iterations this tool goes throught the more reusable
+	it's parts will become.
+	""")
+	parser.add_argument("directory", help="Specify the directory containing your 'Show Files'")
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument("--csv", help="Output results as CSV file", action="store_true")
+	args = parser.parse_args()
+
+	if args.csv:
+	    csv_inventory(collate(args.directory))
+            print 'Your inventory has been created successfully.'
+        else:
+            print collate(args.directory)
 
 
 def find_hostname(fin):
@@ -204,5 +245,5 @@ def csv_inventory(collated_records):
                             entry.software_version])
 
 
-# csv_inventory(collate(DIRECTORY))
-collate(DIRECTORY)
+if __name__ == '__main__':
+	main()
