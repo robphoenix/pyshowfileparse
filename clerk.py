@@ -198,12 +198,12 @@ def collate(directory):
     for fin in sorted(os.listdir(directory)):
         with open(os.path.join(directory, fin)) as show_f:
             content = show_f.read()
-            hostname = find_hostname(content)[0]
+            hostname = find_hostname(content)
             serial_numbers = find_serial_nums(content)
             model_sw_result = find_model_sw(content)
             i = 0
             while i < len(serial_numbers):
-                device_list.append(Device(hostname,
+                device_list.append(Device(hostname[0],
                                           serial_numbers[i],
                                           model_sw_result[i][0],
                                           model_sw_result[i][1],
