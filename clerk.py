@@ -96,55 +96,49 @@ def main():
             stdout_inventory(collate(args.directory))
 
 
-def find_hostname(fin):
+def find_hostname(text):
     """
     Finds device hostname in a given Cisco 'show' file.
     Uses a regular expression. ## TODO improve find_hostname description
 
     Args:
-        fin (file): Cisco show file ## TODO improve find_hostname args description
+        fin (str): Cisco show file ## TODO improve find_hostname args description
 
     Returns:
-        str: Device hostname
+        tuple(str): Device hostname
 
     Example:
-        >>> find_hostname(open("file.txt"))
-        'hostname'
+        >>> text = open("file.txt").read()
+        >>> find_hostname(text)
+        ('hostname',)
     """
-    i, hostname = 0, ""
-    while i < 1:
-        for line in fin:
-            if HOSTNAME_REGEX.search(line):
-                hostname = re.match(HOSTNAME_REGEX, line).group("hostname")
-                # finish parsing the file once hostname has been found
-                i += 1
-    return hostname
+    return (HOSTNAME_REGEX.search(text).group("hostname"),)
 
 
-def find_serial_nums(fin):
+def find_serial_nums(text):
     """
     Finds device serial number(s) in a given Cisco 'show' file.
-    Uses a regular expression. ## TODO improve find_serial_nums description
+    Uses a regular expression. ## TODO improve find_serial_nums description.
+    ## TODO Include note about needing to keep order, therefore set is not an option
 
     Args:
-        fin (file): Cisco show file ## TODO improve find_serial_nums args description
+        fin (str): Cisco show file ## TODO improve find_serial_nums args description
 
     Returns:
-        list(str): A list of device serial numbers
+        tuple(str): A list of device serial numbers
 
     Example:
-        >>> find_serial_nums(open("file.txt"))
-        ['ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333']
+        >>> text = open("file.txt").read()
+        >>> find_serial_nums(text)
+        ('ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333')
     """
     sn_list = []
-    for line in fin:
-        if SERIAL_NUMBER_REGEX.search(line):
-            sn_match = re.match(SERIAL_NUMBER_REGEX, line).group("sys_ser_num")
-            if sn_match not in sn_list:
-                sn_list.append(sn_match)
-    return sn_list
+    serial_nums = re.findall(SERIAL_NUMBER_REGEX, text)
+    [sn_list.append(item) for item in serial_nums if item not in sn_list]
+    return tuple(sn_list)
 
-def find_model_sw(fin):
+
+def find_model_sw(text):
     """
     Finds model number, software version and software image
     in a given Cisco 'show' file.
@@ -152,20 +146,20 @@ def find_model_sw(fin):
     Uses a regular expression. ## TODO improve find_model_sw description
 
     Args:
-        fin (file): Cisco show file. ## TODO improve find_model_sw args description
+        fin (str): Cisco show file. ## TODO improve find_model_sw args description
 
     Returns:
-        list(tuple(str)): list of 3 string tuples, containing device
+        tuple(tuple(str)): tuple of 3 string tuples, containing device
         model number, software version and software image
 
     Example:
-        >>> find_model_sw(open("file.txt"))
+        >>> text = open("file.txt").read()
+        >>> find_model_sw(text)
         [('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
          ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
          ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
     """
-    model_sw_list = re.findall(MODEL_AND_SOFTWARE_REGEX, fin.read())
-    return model_sw_list
+    return tuple(re.findall(MODEL_AND_SOFTWARE_REGEX, text))
 
 
 def collate(directory):
@@ -178,7 +172,7 @@ def collate(directory):
         directory (str): Directory containing the Cisco show files
 
     Returns:
-        list(Device(str)): List of named tuples containing device
+        tuple(Device(str)): tuple of named tuples containing device
                            info strings.
 
     Example:
@@ -202,18 +196,20 @@ def collate(directory):
                            software_version
                            software_image''')
     for fin in sorted(os.listdir(directory)):
-        hostname = find_hostname(open(os.path.join(directory, fin)))
-        serial_numbers = find_serial_nums(open(os.path.join(directory, fin)))
-        model_sw_result = find_model_sw(open(os.path.join(directory, fin)))
-        i = 0
-        while i < len(serial_numbers):
-            device_list.append(Device(hostname,
-                                      serial_numbers[i],
-                                      model_sw_result[i][0],
-                                      model_sw_result[i][1],
-                                      model_sw_result[i][2]))
-            i += 1
-    return device_list
+        with open(os.path.join(directory, fin)) as show_f:
+            content = show_f.read()
+            hostname = find_hostname(content)[0]
+            serial_numbers = find_serial_nums(content)
+            model_sw_result = find_model_sw(content)
+            i = 0
+            while i < len(serial_numbers):
+                device_list.append(Device(hostname,
+                                          serial_numbers[i],
+                                          model_sw_result[i][0],
+                                          model_sw_result[i][1],
+                                          model_sw_result[i][2]))
+                i += 1
+    return tuple(device_list)
 
 
 def csv_inventory(collated_records):
@@ -222,10 +218,10 @@ def csv_inventory(collated_records):
     a given list of named tuples.
 
     Args:
-        collated_records (list(Device(str))): List of named tuples.
+        collated_records (iter(Device(str))): iterable of named tuples.
 
     Returns:
-        A .csv file.
+        IO -> A .csv file.
     """
     csv_filename = "INVENTORY-{}.csv".format(
         strftime("%Y-%m-%d-%H%M%S", gmtime()))

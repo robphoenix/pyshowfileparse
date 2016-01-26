@@ -22,38 +22,38 @@ class ClerkTest(unittest.TestCase):
             self.test_data_dir, ".cache/"), ignore_errors=True)
 
     def test_find_hostname(self):
-        expected = ['elizabeth_cotton',
-                    'howlin_wolf',
-                    'lightning_hopkins',
-                    'sister_rosetta_tharpe']
+        expected = [('elizabeth_cotton',),
+                    ('howlin_wolf',),
+                    ('lightning_hopkins',),
+                    ('sister_rosetta_tharpe',)]
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_hostname(t_fin))
+                actual.append(clerk.find_hostname(t_fin.read()))
         self.failUnlessEqual(actual, expected)
 
     def test_find_serial_nums(self):
-        expected = [['ANC1111A1AB'],
-                    ['ABC2222A2AB'],
-                    ['ABC3333A33A', 'ABC4444A44A', 'ABC5555A555'],
-                    ['ABC6666A6AB']]
+        expected = [('ANC1111A1AB',),
+                    ('ABC2222A2AB',),
+                    ('ABC3333A33A', 'ABC4444A44A', 'ABC5555A555'),
+                    ('ABC6666A6AB',)]
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_serial_nums(t_fin))
+                actual.append(clerk.find_serial_nums(t_fin.read()))
         self.failUnlessEqual(actual, expected)
 
     def test_find_model_sw(self):
-        expected = [[('WS-C2960C-8PC-L',
+        expected = [(('WS-C2960C-8PC-L',
                       '15.0(2)SE5',
-                      'C2960c405-UNIVERSALK9-M')],
-                    [('WS-C2960C-8PC-L',
+                      'C2960c405-UNIVERSALK9-M'),),
+                    (('WS-C2960C-8PC-L',
                       '15.0(2)SE5',
                       'C2960c405-UNIVERSALK9-M'),
                      ('WS-C2960C-8PC-L',
                       '15.0(2)SE5',
-                      'C2960c405-UNIVERSALK9-M')],
-                    [('WS-C2960X-48FPD-L',
+                      'C2960c405-UNIVERSALK9-M')),
+                    (('WS-C2960X-48FPD-L',
                       '15.0(2)EX5',
                       'C2960X-UNIVERSALK9-M'),
                      ('WS-C2960X-48FPD-L',
@@ -61,18 +61,18 @@ class ClerkTest(unittest.TestCase):
                       'C2960X-UNIVERSALK9-M'),
                      ('WS-C2960X-24PD-L',
                       '15.0(2)EX5',
-                      'C2960X-UNIVERSALK9-M')],
-                    [('WS-C3650-24TD',
+                      'C2960X-UNIVERSALK9-M')),
+                    (('WS-C3650-24TD',
                       '03.03.03SE',
-                      'cat3k_caa-universalk9')]]
+                      'cat3k_caa-universalk9'),)]
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_model_sw(t_fin))
+                actual.append(clerk.find_model_sw(t_fin.read()))
         self.failUnlessEqual(actual, expected)
 
     def test_collate(self):
-        expected = [[Device(hostname='elizabeth_cotton',
+        expected = [(Device(hostname='elizabeth_cotton',
                             serial_number='ANC1111A1AB',
                             model_number='WS-C2960C-8PC-L',
                             software_version='15.0(2)SE5',
@@ -101,7 +101,7 @@ class ClerkTest(unittest.TestCase):
                             serial_number='ABC6666A6AB',
                             model_number='WS-C3650-24TD',
                             software_version='03.03.03SE',
-                            software_image='cat3k_caa-universalk9')]]
+                            software_image='cat3k_caa-universalk9'))]
         actual = []
         actual.append(clerk.collate(self.test_data_dir))
         self.failUnlessEqual(actual, expected)
