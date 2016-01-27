@@ -246,7 +246,7 @@ def width_of_column(collated_records, column, init_length):
         col_length = len(getattr(entry, column))
         if col_length > init_length:
             init_length = col_length
-    return init_length + 4
+    return init_length
 
 
 def stdout_inventory(collated_records):
@@ -255,10 +255,10 @@ def stdout_inventory(collated_records):
     mn_col = width_of_column(collated_records, "model_number", 12)
     si_col = width_of_column(collated_records, "software_image", 14)
     sv_col = width_of_column(collated_records, "software_version", 16)
-    table_structure = "\t|{0:^{hn_col}}|{1:^{sn_col}}|{2:^{mn_col}}|{3:^{si_col}}|{4:^{sv_col}}|"
-    table_divider = "\t={0:=^{hn_col}}+{1:=^{sn_col}}+{2:=^{mn_col}}+{3:=^{si_col}}+{4:=^{sv_col}}=".format(
+    table_structure = " | {0:<{hn_col}} | {1:^{sn_col}} | {2:<{mn_col}} | {3:<{si_col}} | {4:^{sv_col}} |"
+    table_divider = " +-{0:-^{hn_col}}-+-{1:-^{sn_col}}-+-{2:-^{mn_col}}-+-{3:-^{si_col}}-+-{4:-^{sv_col}}-+".format(
         "", "", "", "", "", hn_col=hn_col, sn_col=sn_col, mn_col=mn_col, si_col=si_col, sv_col=sv_col)
-    print("\n\n" + table_divider)
+    print("\n" + table_divider)
     print(table_structure.format("Hostname",
                                  "Serial Number",
                                  "Model Number",
@@ -281,7 +281,7 @@ def stdout_inventory(collated_records):
                                      mn_col=mn_col,
                                      si_col=si_col,
                                      sv_col=sv_col))
-    print(table_divider + "\n\n")
+    print(table_divider + "\n")
 
 
 if __name__ == '__main__':
