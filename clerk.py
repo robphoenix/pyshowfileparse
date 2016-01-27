@@ -27,11 +27,10 @@ Attributes:
 import os
 import re
 import csv
-import json
 import argparse
-from sys import argv
 from collections import namedtuple
 from time import gmtime, strftime
+from gooey import Gooey, GooeyParser
 
 
 HOSTNAME_REGEX = re.compile(
@@ -58,9 +57,9 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
         """,
         re.VERBOSE)
 
-
+@Gooey
 def main():
-    parser = argparse.ArgumentParser(
+    parser = GooeyParser(
         prog="Clerk",
         description="""
         Extract specific information from a directory of Cisco switch 'Show Files'.
@@ -84,16 +83,12 @@ def main():
         bespoke manner.  The more iterations this tool goes throught the more reusable
         it's parts will become.
         """)
-    parser.add_argument("directory", help="Specify the directory containing your 'Show Files'")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--csv", help="Output results as CSV file", action="store_true")
+    parser.add_argument("directory",
+                        widget="DirChooser",
+                        help="Specify the directory containing your 'Show Files'")
     args = parser.parse_args()
 
-    if args.csv:
-        csv_inventory(collate(args.directory))
-        print('Your inventory has been created successfully.')
-    else:
-        stdout_inventory(collate(args.directory))
+    csv_inventory(collate(args.directory))
 
 
 def find_hostname(text):
