@@ -86,9 +86,16 @@ def main():
     parser.add_argument("directory",
                         widget="DirChooser",
                         help="Specify the directory containing your 'Show Files'")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--csv", help="Output results as CSV file", action="store_true")
+    group.add_argument("--cli", help="Output results to the command line", action="store_true")
     args = parser.parse_args()
 
-    csv_inventory(collate(args.directory))
+    if args.csv:
+        csv_inventory(collate(args.directory))
+        print('Your inventory has been created successfully.')
+    elif args.cli:
+        stdout_inventory(collate(args.directory))
 
 
 def find_hostname(text):
