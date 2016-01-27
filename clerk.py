@@ -1,28 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Cisco Clerk
-
-This module contains functions to extract device info from Cisco Switch `show` files.
-## TODO improve module description
-
-Example:
-    ## TODO improve example description
-    $ python clerk.py show_files_directory
-
-Attributes:
-    HOSTNAME_REGEX (str): Regex to extract the device hostname.
-                          Matches: HOSTNAME#sh version
-                          Assumes the `show version` command is used in
-                          the config. files, and the hostname is the name
-                          before the # symbol.
-    SERIAL_NUMBER_REGEX (str): Regex to extract the device serial number.
-                               Matches: System serial number            : ABC2016XYZ
-    MODEL_SW_PATTERN (str): Regex to extract device model number,
-                            software version and software image.
-                            Matches: WS-C2960C-8PC-L    15.0(2)SE5            C2960c405-UNIVERSALK9-M
-                            Matches: WS-C3650-24TD      03.03.03SE        cat3k_caa-universalk9 INSTALL
 """
+Title:      Cisco Clerk
+Author:     Rob Phoenix (rob.phoenix@bt.com)
+Usage:      Creates a CSV inventory of Cisco switches from a folder containing
+            Cisco 'show version' text files.  This inventory contains the
+            hostname, model number, serial number, software image & software version
+            of each device, including switch stacks.
+Date:       27/01/2016
+Version:    0.1
+Attributes:
+    HOSTNAME_REGEX (str):      Regex to extract the device hostname.
+
+                               Matches: HOSTNAME#sh version
+
+                               Assumes the `show version` command is used in
+                               the config. files, and the hostname is the name
+                               before the # symbol.
+    SERIAL_NUMBER_REGEX (str): Regex to extract the device serial number.
+
+                               Matches: System serial number            : ABC2016XYZ
+
+    MODEL_SW_PATTERN (str):    Regex to extract device model number,
+                               software version and software image.
+
+                               Matches: WS-C2960C-8PC-L    15.0(2)SE5            C2960c405-UNIVERSALK9-M
+                               Matches: WS-C3650-24TD      03.03.03SE        cat3k_caa-universalk9 INSTALL
+"""
+
 
 import os
 import re
@@ -56,6 +61,7 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
         (?P<sw_image>\w+[-|_][\w-]+\-[\w]+) # capture software image group
         """,
         re.VERBOSE)
+
 
 @Gooey
 def main():
@@ -94,13 +100,12 @@ def main():
 def find_hostname(text):
     """
     Finds device hostname in a given Cisco 'show' file.
-    Uses a regular expression. ## TODO improve find_hostname description
 
     Args:
-        fin (str): Cisco show file ## TODO improve find_hostname args description
+        text (str): Cisco 'show' file as a string.
 
     Returns:
-        tuple(str): Device hostname
+        tuple(str,): Device hostname.
 
     Example:
         >>> text = open("file.txt").read()
@@ -113,14 +118,12 @@ def find_hostname(text):
 def find_serial_nums(text):
     """
     Finds device serial number(s) in a given Cisco 'show' file.
-    Uses a regular expression. ## TODO improve find_serial_nums description.
-    ## TODO Include note about needing to keep order, therefore set is not an option
 
     Args:
-        fin (str): Cisco show file ## TODO improve find_serial_nums args description
+        text (str): Cisco 'show' file as a string.
 
     Returns:
-        tuple(str): A list of device serial numbers
+        tuple(str,): A tuple of device serial numbers.
 
     Example:
         >>> text = open("file.txt").read()
@@ -129,6 +132,11 @@ def find_serial_nums(text):
     """
     sn_list = []
     serial_nums = re.findall(SERIAL_NUMBER_REGEX, text)
+    # One or more serial numbers may be duplicated within the file
+    # so we need to remove any duplicates, but also preserve the order
+    # in which the serial numbers are found, so tha the right serial number
+    # is matched to the other relevant device info.  Therefore we can't
+    # use a `set` as it doesn't preserve order.
     [sn_list.append(item) for item in serial_nums if item not in sn_list]
     return tuple(sn_list)
 
@@ -138,14 +146,12 @@ def find_model_sw(text):
     Finds model number, software version and software image
     in a given Cisco 'show' file.
 
-    Uses a regular expression. ## TODO improve find_model_sw description
-
     Args:
-        fin (str): Cisco show file. ## TODO improve find_model_sw args description
+        text (str): Cisco 'show' file as a string.
 
     Returns:
-        tuple(tuple(str)): tuple of 3 string tuples, containing device
-        model number, software version and software image
+        tuple(tuple(str,),): Tuple of 3 string tuples, containing device
+                             model number, software version and software image
 
     Example:
         >>> text = open("file.txt").read()
@@ -159,19 +165,20 @@ def find_model_sw(text):
 
 def collate(directory):
     """
-    Creates a list of named tuples. Each named tuple contains the
+    Creates a tuple of named tuples. Each named tuple contains the
     hostname, serial number, model number, software version and
-    software image for each Cisco 'show' file in a given directory.
+    software image for each device in a Cisco 'show' file within a
+    given directory.
 
     Args:
-        directory (str): Directory containing the Cisco show files
+        directory (str): Directory containing the Cisco show files.
 
     Returns:
-        tuple(Device(str)): tuple of named tuples containing device
-                           info strings.
+        tuple(Device(str),): Tuple of named tuples containing device
+                             info strings.
 
     Example:
-        >>> collate("directory")
+        >>> collate("relative_directory_name")
         [Device(hostname='elizabeth_cotton',
                 serial_number='ANC1111A1AB',
                 model_number='WS-C2960C-8PC-L',
@@ -208,15 +215,17 @@ def collate(directory):
 
 
 def csv_inventory(collated_records):
-    """ TODO improve csv_inventory docstring
+    """
     Creates a .csv file containing Cisco device information from
-    a given list of named tuples.
+    a given iterable of named tuples. This is a dead-end function,
+    it doesn't return anything, and has side-effects; writing to
+    a .csv file.
 
     Args:
-        collated_records (iter(Device(str))): iterable of named tuples.
+        collated_records (iter(Device(str),)): Iterable of named tuples.
 
     Returns:
-        IO -> A .csv file.
+        None
     """
     csv_filename = "INVENTORY-{}.csv".format(
         strftime("%Y-%m-%d-%H%M%S", gmtime()))
@@ -236,48 +245,5 @@ def csv_inventory(collated_records):
                              entry.software_version])
 
 
-def width_of_column(collated_records, column, init_length):
-    for entry in collated_records:
-        col_length = len(getattr(entry, column))
-        if col_length > init_length:
-            init_length = col_length
-    return init_length
-
-
-def stdout_inventory(collated_records):
-    hn_col = width_of_column(collated_records, "hostname", 8)
-    sn_col = width_of_column(collated_records, "serial_number", 13)
-    mn_col = width_of_column(collated_records, "model_number", 12)
-    si_col = width_of_column(collated_records, "software_image", 14)
-    sv_col = width_of_column(collated_records, "software_version", 16)
-    table_structure = " | {0:<{hn_col}} | {1:^{sn_col}} | {2:<{mn_col}} | {3:<{si_col}} | {4:^{sv_col}} |"
-    table_divider = " +-{0:-^{hn_col}}-+-{1:-^{sn_col}}-+-{2:-^{mn_col}}-+-{3:-^{si_col}}-+-{4:-^{sv_col}}-+".format(
-        "", "", "", "", "", hn_col=hn_col, sn_col=sn_col, mn_col=mn_col, si_col=si_col, sv_col=sv_col)
-    print("\n" + table_divider)
-    print(table_structure.format("Hostname",
-                                 "Serial Number",
-                                 "Model Number",
-                                 "Software Image",
-                                 "Software Version",
-                                 hn_col=hn_col,
-                                 sn_col=sn_col,
-                                 mn_col=mn_col,
-                                 si_col=si_col,
-                                 sv_col=sv_col))
-    print(table_divider)
-    for entry in collated_records:
-        print(table_structure.format(entry.hostname,
-                                     entry.serial_number,
-                                     entry.model_number,
-                                     entry.software_image,
-                                     entry.software_version,
-                                     hn_col=hn_col,
-                                     sn_col=sn_col,
-                                     mn_col=mn_col,
-                                     si_col=si_col,
-                                     sv_col=sv_col))
-    print(table_divider + "\n")
-
-
 if __name__ == '__main__':
-	main()
+    main()
