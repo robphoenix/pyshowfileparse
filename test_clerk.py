@@ -30,7 +30,7 @@ class ClerkTest(unittest.TestCase):
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
                 actual.append(clerk.find_hostname(t_fin.read()))
-        self.failUnlessEqual(actual, expected)
+        self.assertEqual(actual, expected)
 
     def test_find_serial_nums(self):
         expected = [('ANC1111A1AB',),
@@ -41,7 +41,7 @@ class ClerkTest(unittest.TestCase):
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
                 actual.append(clerk.find_serial_nums(t_fin.read()))
-        self.failUnlessEqual(actual, expected)
+        self.assertEqual(actual, expected)
 
     def test_find_model_sw(self):
         expected = [(('WS-C2960C-8PC-L',
@@ -69,7 +69,7 @@ class ClerkTest(unittest.TestCase):
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
                 actual.append(clerk.find_model_sw(t_fin.read()))
-        self.failUnlessEqual(actual, expected)
+        self.assertEqual(actual, expected)
 
     def test_collate(self):
         expected = [(Device(hostname='elizabeth_cotton',
@@ -104,7 +104,7 @@ class ClerkTest(unittest.TestCase):
                             software_image='cat3k_caa-universalk9'))]
         actual = []
         actual.append(clerk.collate(self.test_data_dir))
-        self.failUnlessEqual(actual, expected)
+        self.assertEqual(actual, expected)
 
 
 if __name__ == '__main__':

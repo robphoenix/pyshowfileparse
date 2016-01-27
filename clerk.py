@@ -60,40 +60,40 @@ MODEL_AND_SOFTWARE_REGEX = re.compile(
 
 
 def main():
-	parser = argparse.ArgumentParser(
-	prog="Clerk",
-	description="""
-	Extract specific information from a directory of Cisco switch 'Show Files'.
-	Prints to stdout unless filetype specified.""",
-	formatter_class=argparse.RawDescriptionHelpFormatter,
-	epilog="""
-	Clerk
-	=====
+    parser = argparse.ArgumentParser(
+        prog="Clerk",
+        description="""
+        Extract specific information from a directory of Cisco switch 'Show Files'.
+        Prints to stdout unless filetype specified.""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+        Clerk
+        =====
 
-	Filing your Cisco inventory records
-	-----------------------------------
-	Generates an inventory of specific information regarding Cisco switches from a
-	folder of text files containing the output of Cisco Show commands.
-	This information can include, but is not limited to, device hostnames, model
-	numbers, serial numbers, software image & version and site id's & names. Also
-	takes into consideration switch stacks as well as individual switches.  This
-	can then all be collated into a separate text file, csv file or excel
-	spreadsheet, and updated as necessary if new files are added to the original
-	folder. Currently, due to the individual nature of device naming conventions
-	and engineer requirements, this project is not general purpose but built in a
-	bespoke manner.  The more iterations this tool goes throught the more reusable
-	it's parts will become.
-	""")
-	parser.add_argument("directory", help="Specify the directory containing your 'Show Files'")
-	group = parser.add_mutually_exclusive_group()
-	group.add_argument("--csv", help="Output results as CSV file", action="store_true")
-	args = parser.parse_args()
+        Filing your Cisco inventory records
+        -----------------------------------
+        Generates an inventory of specific information regarding Cisco switches from a
+        folder of text files containing the output of Cisco Show commands.
+        This information can include, but is not limited to, device hostnames, model
+        numbers, serial numbers, software image & version and site id's & names. Also
+        takes into consideration switch stacks as well as individual switches.  This
+        can then all be collated into a separate text file, csv file or excel
+        spreadsheet, and updated as necessary if new files are added to the original
+        folder. Currently, due to the individual nature of device naming conventions
+        and engineer requirements, this project is not general purpose but built in a
+        bespoke manner.  The more iterations this tool goes throught the more reusable
+        it's parts will become.
+        """)
+    parser.add_argument("directory", help="Specify the directory containing your 'Show Files'")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--csv", help="Output results as CSV file", action="store_true")
+    args = parser.parse_args()
 
-	if args.csv:
-	    csv_inventory(collate(args.directory))
-            print 'Your inventory has been created successfully.'
-        else:
-            stdout_inventory(collate(args.directory))
+    if args.csv:
+        csv_inventory(collate(args.directory))
+        print('Your inventory has been created successfully.')
+    else:
+        stdout_inventory(collate(args.directory))
 
 
 def find_hostname(text):
@@ -258,8 +258,8 @@ def stdout_inventory(collated_records):
     table_structure = "\t|{0:^{hn_col}}|{1:^{sn_col}}|{2:^{mn_col}}|{3:^{si_col}}|{4:^{sv_col}}|"
     table_divider = "\t={0:=^{hn_col}}+{1:=^{sn_col}}+{2:=^{mn_col}}+{3:=^{si_col}}+{4:=^{sv_col}}=".format(
         "", "", "", "", "", hn_col=hn_col, sn_col=sn_col, mn_col=mn_col, si_col=si_col, sv_col=sv_col)
-    print "\n\n" + table_divider
-    print table_structure.format("Hostname",
+    print("\n\n" + table_divider)
+    print(table_structure.format("Hostname",
                                  "Serial Number",
                                  "Model Number",
                                  "Software Image",
@@ -268,10 +268,10 @@ def stdout_inventory(collated_records):
                                  sn_col=sn_col,
                                  mn_col=mn_col,
                                  si_col=si_col,
-                                 sv_col=sv_col)
-    print table_divider
+                                 sv_col=sv_col))
+    print(table_divider)
     for entry in collated_records:
-        print table_structure.format(entry.hostname,
+        print(table_structure.format(entry.hostname,
                                      entry.serial_number,
                                      entry.model_number,
                                      entry.software_image,
@@ -280,8 +280,8 @@ def stdout_inventory(collated_records):
                                      sn_col=sn_col,
                                      mn_col=mn_col,
                                      si_col=si_col,
-                                     sv_col=sv_col)
-    print table_divider + "\n\n"
+                                     sv_col=sv_col))
+    print(table_divider + "\n\n")
 
 
 if __name__ == '__main__':
