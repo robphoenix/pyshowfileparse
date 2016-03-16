@@ -178,3 +178,5 @@ Configuration register is 0xF
 elizabeth_cotton#sh inventory
 NAME: "1", DESCR: "WS-C2960C-8PC-L"
 PID: WS-C2960C-8PC-L   , VID: V01  , SN: ABC1111A1AB
+System serial number            : ANC1234A1CD
+*    1 10    WS-C2960C-8PC-L    15.0(2)SE5            C2960c405-UNIVERSALK9-M
