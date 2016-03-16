@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var fs = require('fs');
 var path = require('path');
@@ -12,14 +12,12 @@ var serialNumberRegex = /[Ss]ystem\s+[Ss]erial\s+[Nn]umber\s+:\s([\w]+)/g;
 var modelSoftwareRegex = /([\w-]+)\s+(\d{2}\.[\w\.)?(?]+)\s+(\w+[-|_][\w-]+\-[\w]+)/g;
 
 
-function parseFile(fileName) {
-  fileName = path.join(testDataDir, fileName);
-  var fileContent = fs.readFileSync(fileName, 'utf8');
+function getHostname(fileContent) {
+    var hostname = hostnameRegex.exec(fileContent)[1];
+    return hostname;
+};
 
-  // Get hostname
-  var hostname = hostnameRegex.exec(fileContent)[1];
-
-  // Get Serial Numbers
+function getSerialNumbers(fileContent) {
   var serialNumberArray = [];
   var serialNumberMatch;
 
@@ -27,44 +25,63 @@ function parseFile(fileName) {
     serialNumberArray.push(serialNumberMatch[1]);
   };
 
-  // Get Model, Software Version & Software Image
-  var modelNumberArray = [];
-  var softwareVersionArray = [];
-  var softwareImageArray = [];
+  return serialNumberArray;
+};
+
+function getModelAndSoftware(fileContent) {
+  var allModelSoftwareArray = [];
   var modelSoftwareMatch;
 
   while (modelSoftwareMatch = modelSoftwareRegex.exec(fileContent)) {
-    // console.log(modelSoftwareMatch);
-    modelNumberArray.push(modelSoftwareMatch[1]);
-    softwareVersionArray.push(modelSoftwareMatch[2]);
-    softwareImageArray.push(modelSoftwareMatch[3]);
+    var eachModelSoftwareArray = [];
+    eachModelSoftwareArray.push(modelSoftwareMatch[1]);
+    eachModelSoftwareArray.push(modelSoftwareMatch[2]);
+    eachModelSoftwareArray.push(modelSoftwareMatch[3]);
+    allModelSoftwareArray.push(eachModelSoftwareArray);
   };
 
-  var device = Immutable.Map(
-    {
-      hostname:hostname,
-      serialNumbers:serialNumberArray,
-      modelNumbers:modelNumberArray,
-      softwareVersions:softwareVersionArray,
-      softwareImages:softwareImageArray
-    });
-
-  console.log(device);
-
-  /*
-  console.log('\n')
-  console.log("Hostname: " + hostname);
-  console.log("Serial Numbers: " + serialNumberArray);
-  console.log("Model Numbers: " + modelNumberArray);
-  console.log("Software Versions: " + softwareVersionArray);
-  console.log("Software Images: " + softwareImageArray);
-  */
-
+  return allModelSoftwareArray;
 }
 
+function parseFile(fileName) {
+  fileName = path.join(testDataDir, fileName);
+  var fileContent = fs.readFileSync(fileName, 'utf8');
 
+  var hostname = getHostname(fileContent);
+  var serialNumbers = getSerialNumbers(fileContent);
+  var modelAndSoftware = getModelAndSoftware(fileContent);
+
+  var deviceList = [];
+
+  var i = 0;
+  while (i < serialNumbers.length) {
+    var device = Immutable.List(
+    [
+      hostname,
+      serialNumbers[i],
+      modelAndSoftware[i][0],
+      modelAndSoftware[i][1],
+      modelAndSoftware[i][2]
+    ]);
+
+    deviceList.push(device.join());
+    i++;
+  }
+
+  return deviceList;
+}
 
 // Loop through test Data directory
-fs.readdir(testDataDir, function(err, files) {
-  R.map(parseFile, files)
-});
+function buildData(dir) {
+  var output = "Hostname,Serial Number,Model,Software Version,Software Image\n";
+  var fileNames = fs.readdirSync(dir)
+  fileNames.map(function(file) {
+    parseFile(file).map(function(device) {
+      output += device;
+      output += "\n"
+    });
+  });
+  return output;
+}
+
+console.log(buildData(testDataDir));
