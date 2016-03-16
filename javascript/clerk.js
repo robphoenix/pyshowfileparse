@@ -74,8 +74,7 @@ function parseFile(fileName) {
 // Loop through test Data directory
 function buildData(dir) {
   var output = "Hostname,Serial Number,Model,Software Version,Software Image\n";
-  var fileNames = fs.readdirSync(dir)
-  fileNames.map(function(file) {
+  fs.readdirSync(dir).map(function(file) {
     parseFile(file).map(function(device) {
       output += device;
       output += "\n"
