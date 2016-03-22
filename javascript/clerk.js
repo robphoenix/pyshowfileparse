@@ -5,19 +5,17 @@ var path = require('path');
 var R = require('ramda');
 var Immutable = require('immutable');
 
-var testDataDir = path.join('..', 'test_data');
-// var fileName = path.join('..', 'test_data', 'elizabeth_cotton.txt');
+var testDataDir = 'C:\\Users\\robertph\\RobBT\\RepeatableDesign\\python_scripts\\inventory_generation\\alexey-show-files' // path.join('..', 'test_data');
 var hostnameRegex = /(\S+)\#sh[ow\s]+ver.*/;
 var serialNumberRegex = /[Ss]ystem\s+[Ss]erial\s+[Nn]umber\s+:\s([\w]+)/g;
 var modelSoftwareRegex = /([\w-]+)\s+(\d{2}\.[\w\.)?(?]+)\s+(\w+[-|_][\w-]+\-[\w]+)/g;
 
 
-function getHostname(fileContent) {
-    var hostname = hostnameRegex.exec(fileContent)[1];
-    return hostname;
+function fetchHostname(fileContent) {
+  return hostnameRegex.exec(fileContent)[1];
 };
 
-function getSerialNumbers(fileContent) {
+function fetchSerialNumbers(fileContent) {
   var serialNumberArray = [];
   var serialNumberMatch;
 
@@ -28,7 +26,7 @@ function getSerialNumbers(fileContent) {
   return serialNumberArray;
 };
 
-function getModelAndSoftware(fileContent) {
+function fetchModelAndSoftware(fileContent) {
   var allModelSoftwareArray = [];
   var modelSoftwareMatch;
 
@@ -47,16 +45,15 @@ function parseFile(fileName) {
   fileName = path.join(testDataDir, fileName);
   var fileContent = fs.readFileSync(fileName, 'utf8');
 
-  var hostname = getHostname(fileContent);
-  var serialNumbers = getSerialNumbers(fileContent);
-  var modelAndSoftware = getModelAndSoftware(fileContent);
+  var hostname = fetchHostname(fileContent);
+  var serialNumbers = fetchSerialNumbers(fileContent);
+  var modelAndSoftware = fetchModelAndSoftware(fileContent);
 
   var deviceList = [];
 
   var i = 0;
   while (i < serialNumbers.length) {
-    var device = Immutable.List(
-    [
+    var device = Immutable.List([
       hostname,
       serialNumbers[i],
       modelAndSoftware[i][0],
@@ -83,4 +80,11 @@ function buildData(dir) {
   return output;
 }
 
+function writeDataToCSV(content) {
+  var d = new Date()
+  var filename = "Inventory-" + d.getFullYear() + "-" + (d.getMonth() +1) + "-" + d.getDate() + "-" + d.getHours() + d.getMinutes() + d.getSeconds() + ".csv"
+  fs.writeFileSync(filename, content);
+}
+
 console.log(buildData(testDataDir));
+writeDataToCSV(buildData(testDataDir));
