@@ -5,4 +5,4 @@
 *pyc
 /__pycache__/
 *.bak
-/javascript/node_modules/
+/javascript/cisco-clerk/node_modules/

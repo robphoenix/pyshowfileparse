@@ -1,0 +1,10 @@
+{
+  "name": "cisco-clerk",
+  "version": "0.1.0",
+  "description": "",
+  "main": "main.js",
+  "author": "Rob Phoenix <rob.phoenix@bt.com>",
+  "devDependencies": {
+    "electron-prebuilt": "^0.37.2"
+  }
+}
