@@ -119,14 +119,17 @@ function buildData(dir) {
   return output;
 }
 
-function writeDataToCSV(content) {
-  var d = new Date()
-  var filename = "Inventory-" + d.getFullYear() + "-" + (d.getMonth() +1) + "-" + d.getDate() + "-" + d.getHours() + d.getMinutes() + d.getSeconds() + ".csv"
-  fs.writeFileSync(filename, content);
+function writeDataToCSV(content, outputDir, filename) {
+  //var defaultFilename = "Inventory-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + "-" + d.getHours() + d.getMinutes() + d.getSeconds();
+  //var filename = name || defaultFilename;
+  console.log(typeof filename);
+  var outputPath = outputDir || __dirname;
+  var fullPathFilename = path.resolve(outputPath, filename) + ".csv";
+  fs.writeFileSync(fullPathFilename, content);
 }
 
-ipcMain.on('build', function (event, arg) {
-    var result = buildData(arg);
-    writeDataToCSV(result);
+ipcMain.on('build', function (event, showFilesDir, outputDir, inventoryFilename) {
+    var result = buildData(showFilesDir);
+    writeDataToCSV(result, outputDir, inventoryFilename);
     //event.sender.send('result', result);
 });

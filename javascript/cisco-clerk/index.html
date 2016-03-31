@@ -5,11 +5,23 @@
     <title>BT Repeatable Design :: Cisco Clerk</title>
 </head>
 <body style="background:white">
-    <h1>BT Repeatable Design :: Cisco Clerk</h1>
-    Select your show files directory:
-    <input id="showFilesDirPath" type="text" name="showFilesDirPath" value="" placeholder="show files" />
-    <button id="showFilesDirSelect">Browse</button>
-    <button id="build">Build Inventory</button>
+    <div><h1>BT Repeatable Design :: Cisco Clerk</h1></div>
+    <div>
+        Select your show files directory:
+        <input id="showFilesDirPath" type="text" placeholder="show files" />
+        <button id="showFilesDirSelect">Browse</button>
+    </div>
+    <div>
+        Select your output directory:
+        <input id="outputDirPath" type="text" placeholder="output" />
+        <button id="outputDirSelect">Browse</button>
+    </div>
+    <div>
+        Name for Inventory:
+        <input id="inventoryFilename" type="text" />
+    </div>
+    <div><button id="build">Build Inventory</button></div>
+
 
 
     <script src="index.js"></script>
