@@ -108,8 +108,9 @@ function parseFile(fileName) {
 
 // Loop through test Data directory
 function buildData(dir) {
+  var dirString = String(dir);
   var output = "Hostname,Serial Number,Model,Software Version,Software Image\n";
-  fs.readdirSync(dir).map(function(file) {
+  fs.readdirSync(dirString).map(function(file) {
     parseFile(file).map(function(device) {
       output += device;
       output += "\n"
@@ -124,9 +125,8 @@ function writeDataToCSV(content) {
   fs.writeFileSync(filename, content);
 }
 
-ipcMain.on('start', function (event, arg) {
-    var result = buildData(testDataDir);
-    console.log(result);
+ipcMain.on('build', function (event, arg) {
+    var result = buildData(arg);
     writeDataToCSV(result);
-    event.sender.send('result', result);
+    //event.sender.send('result', result);
 });
