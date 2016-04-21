@@ -26,13 +26,8 @@ Attributes:
 
 import os
 import re
-import csv
 import json
-import argparse
-from sys import argv
 from collections import namedtuple
-from time import gmtime, strftime
-from pprint import pprint
 
 
 HOSTNAME_REGEX = re.compile(
@@ -65,17 +60,18 @@ def find_hostname(text):
     Uses a regular expression. ## TODO improve find_hostname description
 
     Args:
-        fin (str): Cisco show file ## TODO improve find_hostname args description
+        fin (str): Cisco show file
 
     Returns:
-        tuple(str): Device hostname
+        hostname (tuple(str)): Device Hostname
 
     Example:
-        >>> text = open("file.txt").read()
+        >>> text = open('./test_data/elizabeth_cotton.txt').read()
         >>> find_hostname(text)
-        ('hostname',)
+        ('elizabeth_cotton',)
     """
-    return (HOSTNAME_REGEX.search(text).group("hostname"),)
+    hostname = (HOSTNAME_REGEX.search(text).group('hostname'),)
+    return hostname
 
 
 def find_serial_nums(text):
@@ -85,20 +81,21 @@ def find_serial_nums(text):
     ## TODO Include note about needing to keep order, therefore set is not an option
 
     Args:
-        fin (str): Cisco show file ## TODO improve find_serial_nums args description
+        fin (str): Cisco show file
 
     Returns:
-        tuple(str): A list of device serial numbers
+        serial_numbers (tuple(str)): Device Serial Numbers
 
     Example:
-        >>> text = open("file.txt").read()
+        >>> text = open('./test_data/lightning_hopkins.txt').read()
         >>> find_serial_nums(text)
-        ('ABC1111A11A', 'DEF2222D22D', 'XYZ3333X333')
+        ('ABC3333A33A', 'ABC4444A44A', 'ABC5555A555')
     """
     sn_list = []
-    serial_nums = re.findall(SERIAL_NUMBER_REGEX, text)
-    [sn_list.append(item) for item in serial_nums if item not in sn_list]
-    return tuple(sn_list)
+    sn_matches = re.findall(SERIAL_NUMBER_REGEX, text)
+    [sn_list.append(item) for item in sn_matches if item not in sn_list]
+    serial_numbers = tuple(sn_list)
+    return serial_numbers
 
 
 def find_model_sw(text):
@@ -106,23 +103,21 @@ def find_model_sw(text):
     Finds model number, software version and software image
     in a given Cisco 'show' file.
 
-    Uses a regular expression. ## TODO improve find_model_sw description
+    Uses a regular expression.
 
     Args:
-        fin (str): Cisco show file. ## TODO improve find_model_sw args description
+        fin (str): Cisco show file.
 
     Returns:
-        tuple(tuple(str)): tuple of 3 string tuples, containing device
-        model number, software version and software image
+        model_and_software (tuple(tuple(str))): Device model number, software version and software image
 
     Example:
-        >>> text = open("file.txt").read()
+        >>> text = open('./test_data/lightning_hopkins.txt').read()
         >>> find_model_sw(text)
-        [('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
-         ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'),
-         ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M')]
+        (('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'), ('WS-C2960X-48FPD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'), ('WS-C2960X-24PD-L', '15.0(2)EX5', 'C2960X-UNIVERSALK9-M'))
     """
-    return tuple(re.findall(MODEL_AND_SOFTWARE_REGEX, text))
+    model_and_software = tuple(re.findall(MODEL_AND_SOFTWARE_REGEX, text))
+    return model_and_software
 
 
 def collate(directory):
@@ -135,21 +130,11 @@ def collate(directory):
         directory (str): Directory containing the Cisco show files
 
     Returns:
-        tuple(Device(str)): tuple of named tuples containing device
-                           info strings.
+        devices (tuple(Device(str))): tuple of named tuples containing device attributes
 
     Example:
-        >>> collate("directory")
-        [Device(hostname='elizabeth_cotton',
-                serial_number='ANC1111A1AB',
-                model_number='WS-C2960C-8PC-L',
-                software_version='15.0(2)SE5',
-                software_image='C2960c405-UNIVERSALK9-M'),
-         Device(hostname='howlin_wolf',
-                serial_number='ABC2222A2AB',
-                model_number='WS-C2960C-8PC-L',
-                software_version='15.0(2)SE5',
-                software_image='C2960c405-UNIVERSALK9-M')]
+        >>> collate('./test_data')
+        (Device(hostname='elizabeth_cotton', serial_number='ANC1111A1AB', model_number='WS-C2960C-8PC-L', software_version='15.0(2)SE5', software_image='C2960c405-UNIVERSALK9-M'), Device(hostname='howlin_wolf', serial_number='ABC2222A2AB', model_number='WS-C2960C-8PC-L', software_version='15.0(2)SE5', software_image='C2960c405-UNIVERSALK9-M'), Device(hostname='lightning_hopkins', serial_number='ABC3333A33A', model_number='WS-C2960X-48FPD-L', software_version='15.0(2)EX5', software_image='C2960X-UNIVERSALK9-M'), Device(hostname='lightning_hopkins', serial_number='ABC4444A44A', model_number='WS-C2960X-48FPD-L', software_version='15.0(2)EX5', software_image='C2960X-UNIVERSALK9-M'), Device(hostname='lightning_hopkins', serial_number='ABC5555A555', model_number='WS-C2960X-24PD-L', software_version='15.0(2)EX5', software_image='C2960X-UNIVERSALK9-M'), Device(hostname='sister_rosetta_tharpe', serial_number='ABC6666A6AB', model_number='WS-C3650-24TD', software_version='03.03.03SE', software_image='cat3k_caa-universalk9'))
     """
     device_list = []
     Device = namedtuple('Device',
@@ -172,38 +157,36 @@ def collate(directory):
                                           model_sw_result[i][1],
                                           model_sw_result[i][2]))
                 i += 1
-    return tuple(device_list)
+    devices = tuple(device_list)
+    return devices
 
 
 def csv_inventory(collated_records):
-    """ TODO improve csv_inventory docstring
-    Creates a .csv file containing Cisco device information from
+    """
+    Creates a .csv formatted string containing Cisco device information from
     a given list of named tuples.
 
     Args:
         collated_records (iter(Device(str))): iterable of named tuples.
 
     Returns:
-        IO -> A .csv file.
+        output (str): CSV formatted string
     """
-    csv_filename = "INVENTORY-{}.csv".format(
-        strftime("%Y-%m-%d-%H%M%S", gmtime()))
-    with open(csv_filename, 'w') as csvfile:
-        fieldnames = ['Hostname',
-                      'Serial Number',
-                      'Model Number',
-                      'Software Image',
-                      'Software Version']
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(fieldnames)
-        for entry in collated_records:
-            writer.writerow([entry.hostname,
-                             entry.serial_number,
-                             entry.model_number,
-                             entry.software_image,
-                             entry.software_version])
+    output = ','.join(list(collated_records[0]._fields))
+
+    for record in collated_records:
+        output += '\n'
+        output += ','.join(list(record))
+    return output
 
 
+
+def json_inventory(collated_records):
+    dict_records = [named_tuple_to_dict(record) for record in collated_records]
+    return json.dumps(dict_records)
+
+def named_tuple_to_dict(nt):
+    return dict(zip(nt._fields, list(nt)))
 
 
 def width_of_column(collated_records, column, init_length):
@@ -214,7 +197,7 @@ def width_of_column(collated_records, column, init_length):
     return init_length
 
 
-def stdout_inventory(collated_records):
+def ascii_table_inventory(collated_records):
     hn_col = width_of_column(collated_records, "hostname", 8)
     sn_col = width_of_column(collated_records, "serial_number", 13)
     mn_col = width_of_column(collated_records, "model_number", 12)
@@ -223,28 +206,40 @@ def stdout_inventory(collated_records):
     table_structure = " | {0:<{hn_col}} | {1:^{sn_col}} | {2:<{mn_col}} | {3:<{si_col}} | {4:^{sv_col}} |"
     table_divider = " +-{0:-^{hn_col}}-+-{1:-^{sn_col}}-+-{2:-^{mn_col}}-+-{3:-^{si_col}}-+-{4:-^{sv_col}}-+".format(
         "", "", "", "", "", hn_col=hn_col, sn_col=sn_col, mn_col=mn_col, si_col=si_col, sv_col=sv_col)
-    print("\n" + table_divider)
-    print(table_structure.format("Hostname",
-                                 "Serial Number",
-                                 "Model Number",
-                                 "Software Image",
-                                 "Software Version",
-                                 hn_col=hn_col,
-                                 sn_col=sn_col,
-                                 mn_col=mn_col,
-                                 si_col=si_col,
-                                 sv_col=sv_col))
-    print(table_divider)
-    for entry in collated_records:
-        print(table_structure.format(entry.hostname,
-                                     entry.serial_number,
-                                     entry.model_number,
-                                     entry.software_image,
-                                     entry.software_version,
-                                     hn_col=hn_col,
-                                     sn_col=sn_col,
-                                     mn_col=mn_col,
-                                     si_col=si_col,
-                                     sv_col=sv_col))
-    print(table_divider + "\n")
+    output = '\n'
+    output += table_divider
+    output += '\n'
 
+    output += table_structure.format(
+        "Hostname",
+        "Serial Number",
+        "Model Number",
+        "Software Image",
+        "Software Version",
+        hn_col=hn_col,
+        sn_col=sn_col,
+        mn_col=mn_col,
+        si_col=si_col,
+        sv_col=sv_col)
+
+    output += '\n'
+    output += table_divider
+    output += '\n'
+
+    for entry in collated_records:
+        output += table_structure.format(
+            entry.hostname,
+            entry.serial_number,
+            entry.model_number,
+            entry.software_image,
+            entry.software_version,
+            hn_col=hn_col,
+            sn_col=sn_col,
+            mn_col=mn_col,
+            si_col=si_col,
+            sv_col=sv_col)
+        output += '\n'
+
+    output += table_divider
+    output += '\n'
+    return output
