@@ -21,7 +21,7 @@ class ClerkTest(unittest.TestCase):
         shutil.rmtree(os.path.join(
             self.test_data_dir, ".cache/"), ignore_errors=True)
 
-    def test_find_hostname(self):
+    def test_fetch_hostname(self):
         expected = [('elizabeth_cotton',),
                     ('howlin_wolf',),
                     ('lightning_hopkins',),
@@ -29,10 +29,10 @@ class ClerkTest(unittest.TestCase):
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_hostname(t_fin.read()))
+                actual.append(clerk.fetch_hostname(t_fin.read()))
         self.assertEqual(actual, expected)
 
-    def test_find_serial_nums(self):
+    def test_fetch_serial_nums(self):
         expected = [('ANC1111A1AB',),
                     ('ABC2222A2AB',),
                     ('ABC3333A33A', 'ABC4444A44A', 'ABC5555A555'),
@@ -40,10 +40,10 @@ class ClerkTest(unittest.TestCase):
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_serial_nums(t_fin.read()))
+                actual.append(clerk.fetch_serial_nums(t_fin.read()))
         self.assertEqual(actual, expected)
 
-    def test_find_model_sw(self):
+    def test_fetch_model_sw(self):
         expected = [(('WS-C2960C-8PC-L',
                       '15.0(2)SE5',
                       'C2960c405-UNIVERSALK9-M'),),
@@ -68,7 +68,7 @@ class ClerkTest(unittest.TestCase):
         actual = []
         for fin in sorted(os.listdir(self.test_data_dir)):
             with open(os.path.join(self.test_data_dir, fin)) as t_fin:
-                actual.append(clerk.find_model_sw(t_fin.read()))
+                actual.append(clerk.fetch_model_sw(t_fin.read()))
         self.assertEqual(actual, expected)
 
     def test_collate(self):
